@@ -16,16 +16,29 @@ public:
 	AFloorSwitch();
 
 	/** Overlap trigger volume */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "FloorSwitch")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Floor Switch")
 	class UBoxComponent* TriggerBox;
 
 	/** Physical switch */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "FloorSwitch")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Floor Switch")
 	class UStaticMeshComponent* FloorSwitch;
 	
 	/** Door will open */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "FloorSwitch")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Floor Switch")
 	UStaticMeshComponent* Door;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Floor Switch")
+	FVector DoorInitialPosition;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Floor Switch")
+	FVector SwitchInitialPosition;
+
+	FTimerHandle SwitchHandle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Floor Switch")
+	float SwitchTime;
+
+	bool bCharacterOnSwitch;
 
 protected:
 	// Called when the game starts or when spawned
@@ -36,8 +49,20 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
-	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+						int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
-	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+						int32 OtherBodyIndex);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Floor Switch")
+	/** So we can give it functionality in blueprints, it gets called as an event */
+	void RaiseDoor();
+	
+	UFUNCTION(BlueprintImplementableEvent, Category = "Floor Switch")
+	void LowerDoor();
+
+	void CloseDoor();
+
 };

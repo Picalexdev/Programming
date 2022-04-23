@@ -15,6 +15,31 @@ public:
 	// Sets default values for this actor's properties
 	AFloatingPlatform();
 
+	/** Platform mesh */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Floating Platform")
+	class UStaticMeshComponent* Mesh;
+
+	UPROPERTY(EditAnywhere)
+	//Creates a visual representation of the vector in the scene so it can be manipulated
+	FVector StartPoint;
+
+	UPROPERTY(EditAnywhere, meta = (MakeEditWidget = "true"))
+	FVector EndPoint;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Floating Platform")
+	float Speed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Floating Platform")
+	float Time;
+
+	FTimerHandle Timer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Floating Platform")
+	bool  bInterping;
+
+	float Distance;
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -22,5 +47,9 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	void ToggleInterping();
+
+	void SwapVectors(FVector& VecOne, FVector& VecTwo);
 
 };

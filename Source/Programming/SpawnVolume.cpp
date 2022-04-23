@@ -2,6 +2,11 @@
 
 
 #include "SpawnVolume.h"
+#include "Components/BoxComponent.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Engine/World.h"
+#include "Critter.h"
+
 
 // Sets default values
 ASpawnVolume::ASpawnVolume()
@@ -9,6 +14,7 @@ ASpawnVolume::ASpawnVolume()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	SpawningBox = CreateDefaultSubobject<UBoxComponent>(TEXT("SpawningBox"));
 }
 
 // Called when the game starts or when spawned
@@ -25,3 +31,26 @@ void ASpawnVolume::Tick(float DeltaTime)
 
 }
 
+FVector ASpawnVolume::GetSpawnPoint()
+{
+	FVector Extent = SpawningBox->GetScaledBoxExtent(); // Receive scale info
+	FVector Origin = SpawningBox->GetComponentLocation(); // Receive world location info
+
+	FVector Point = UKismetMathLibrary::RandomPointInBoundingBox(Origin, Extent);
+
+	return Point;
+}
+
+void ASpawnVolume::SpawnOurPawn_Implementation(UClass* ToSpawn, const FVector& Location)
+{
+	if (ToSpawn)
+	{
+		UWorld* World = GetWorld();
+		FActorSpawnParameters SpawnParams;
+
+		if (World)
+		{
+			ACritter* CritterSpawned = World->SpawnActor<ACritter>(ToSpawn, Location, FRotator(0.f), SpawnParams);
+		}
+	}
+}
