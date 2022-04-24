@@ -2,10 +2,11 @@
 
 
 #include "Pickup.h"
+#include "Main.h"
 
 APickup::APickup()
 {
-
+	Count = 1;
 }
 
 
@@ -23,6 +24,15 @@ void APickup::OnOverlapBegin(
 
 	UE_LOG(LogTemp, Warning, TEXT("Pickup Overlap Begin"));
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Pickup Overlap Begin"));
+
+	if (OtherActor)
+	{
+		AMain* Main = Cast<AMain>(OtherActor);
+		if (Main)
+		{
+			Main->IncrementCoins(Count);
+		}
+	}
 }
 
 void APickup::OnOverlapEnd(

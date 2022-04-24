@@ -12,6 +12,7 @@ void AMainPlayerController::BeginPlay()
 	if (HUDOverlayAsett)
 	{
 		HUDOverlay = CreateWidget<UUserWidget>(this, HUDOverlayAsett);
-
 	}
+	HUDOverlay->AddToViewport();
+	HUDOverlay->SetVisibility(ESlateVisibility::Visible);
 }

@@ -18,6 +18,9 @@ public:
 
 	APickup();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Coins")
+	int32 Count;
+
 	virtual void OnOverlapBegin(
 		UPrimitiveComponent* OverlappedComponent,
 		AActor* OtherActor,

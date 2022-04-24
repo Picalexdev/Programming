@@ -18,6 +18,12 @@ AItem::AItem()
 	// Collision sphere that will be the trigger for the interaction
 	CollisionVolume = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionVolume"));
 	RootComponent = CollisionVolume;
+	// Collision setup
+	CollisionVolume->SetCollisionEnabled(ECollisionEnabled::QueryOnly); // Enable query only (no physics interaction)
+	CollisionVolume->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic); // Set the object type to static
+	CollisionVolume->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore); // Ignore all channels
+	// Set it to overlap with pawns
+	CollisionVolume->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 
 	// Main mesh of the item
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));

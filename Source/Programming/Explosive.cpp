@@ -2,10 +2,11 @@
 
 
 #include "Explosive.h"
+#include "Main.h"
 
 AExplosive::AExplosive()
 {
-
+	Damage = 15.f;
 }
 
 void AExplosive::OnOverlapBegin(
@@ -21,6 +22,15 @@ void AExplosive::OnOverlapBegin(
 
 	UE_LOG(LogTemp, Warning, TEXT("Explosive Overlap Begin"));
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Explosive Overlap Begin"));
+
+	if (OtherActor)
+	{
+		AMain* Main = Cast<AMain>(OtherActor);
+		if (Main)
+		{
+			Main->DecrementHealth(Damage);
+		}
+	}
 }
 
 void AExplosive::OnOverlapEnd(
