@@ -57,6 +57,12 @@ AMain::AMain()
 	GetCharacterMovement()->GroundFriction = 100.f; // Friction with the ground
 	GetCharacterMovement()->BrakingFrictionFactor = 0.0001f; // Deceleration multiplier (GroundFriction * BrakingFrictionFactor)
 
+	// Set default stats for the player
+	MaxHealth = 100.f;
+	Health = 65.f;
+	MaxStamina = 300.f;
+	Stamina = 105.f;
+	Coins = 0.f;
 }
 
 // Called when the game starts or when spawned

@@ -17,10 +17,10 @@ class PROGRAMMING_API AMainPlayerController : public APlayerController
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
-	TSubclassOf<class UUSerWidget> HUDOverlayAsett;
+	TSubclassOf<class UUserWidget> HUDOverlayAsett;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
-	UUSerWidget* HUDOverlay;
+	UUserWidget* HUDOverlay;
 protected:
 
 	virtual void BeginPlay() override;
