@@ -6,6 +6,14 @@
 #include "Item.h"
 #include "Weapon.generated.h"
 
+UENUM()
+enum class EWeaponState :uint8
+{
+	EWS_Pickup		UMETA(Displayname = "Pickup"),
+	EWS_Equipped	UMETA(Displayname = "Pickup"),
+
+	EWS_MAX			UMETA(Displayname = "DefaultMAX")
+};
 /**
  * 
  */
@@ -14,12 +22,21 @@ class PROGRAMMING_API AWeapon : public AItem
 {
 	GENERATED_BODY()
 
+public:
+
 	AWeapon();
 
-public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Item")
+	EWeaponState WeaponState;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Sound")
+	class USoundCue* OnEquipSound;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Mesh")
 	class USkeletalMeshComponent* WeaponMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Particles")
+	bool bKeepParticlesOnPickup;
 
 	virtual void OnOverlapBegin(
 		UPrimitiveComponent* OverlappedComponent,
@@ -38,4 +55,7 @@ public:
 	) override;
 
 	void Equip(class AMain* Char);
+
+	FORCEINLINE void SetWeaponState(EWeaponState State) { WeaponState = State; };
+	FORCEINLINE EWeaponState GetWeaponState() { return WeaponState; };
 };

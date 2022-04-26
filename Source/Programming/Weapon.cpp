@@ -5,12 +5,20 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Main.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Sound/SoundCue.h"
+#include "Kismet/GameplayStatics.h"
+#include "Engine/EngineTypes.h"
 
 
 AWeapon::AWeapon()
 {
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
 	WeaponMesh->SetupAttachment(AItem::Mesh);
+
+	bKeepParticlesOnPickup = false;
+
+	WeaponState = EWeaponState::EWS_Pickup;
 }
 
 void AWeapon::OnOverlapBegin(
@@ -22,12 +30,12 @@ void AWeapon::OnOverlapBegin(
 )
 {
 	Super::OnOverlapBegin(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
-	if (OtherActor)
+	if (WeaponState == EWeaponState::EWS_Pickup && OtherActor)
 	{
 		AMain* Main = Cast<AMain>(OtherActor);
 		if (Main)
 		{
-			Equip(Main);
+			Main->SetActiveOverlappingItem(this);
 		}
 	}
 }
@@ -41,6 +49,11 @@ void AWeapon::OnOverlapEnd(
 {
 	Super::OnOverlapEnd(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex);
 
+	AMain* Main = Cast<AMain>(OtherActor);
+	if (Main)
+	{
+		Main->SetActiveOverlappingItem(nullptr);
+	}
 }
 
 void AWeapon::Equip(AMain* Char)
@@ -54,9 +67,19 @@ void AWeapon::Equip(AMain* Char)
 		const USkeletalMeshSocket* RightHandSocket = Char->GetMesh()->GetSocketByName("RightHandSocket");
 		if (RightHandSocket)
 		{
-			bRotate = false;
 			Mesh->SetWorldRotation(FRotator(0.f));
+			bRotate = false;
+			if (!bKeepParticlesOnPickup)
+			{
+				IdleParticlesComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+				IdleParticlesComponent->Deactivate();
+			}
+			Char->SetEquippedWeapon(this);
+			Char->SetActiveOverlappingItem(nullptr);
 			RightHandSocket->AttachActor(this, Char->GetMesh());
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Equipped"));
+			if (OnEquipSound)
+				UGameplayStatics::PlaySound2D(this, OnEquipSound);
 		}
 	}
 }

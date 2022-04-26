@@ -10,6 +10,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Containers/Array.h"
+#include "Weapon.h"
+
 
 
 
@@ -78,6 +80,9 @@ AMain::AMain()
 
 	StaminaDrainRate = 25.f;
 	MinSprintStamina = 30.f;
+
+	bLmbDown = false;
+	bInteractDown = false;
 }
 
 void AMain::ShowPickupLocations()
@@ -213,6 +218,14 @@ void AMain::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
+	// Attack
+	PlayerInputComponent->BindAction("LMBDown", IE_Pressed, this, &AMain::LMBDown);
+	PlayerInputComponent->BindAction("LMBDown", IE_Released, this, &AMain::LMBUp);
+
+	// Item interaction
+	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AMain::InteractDown);
+	PlayerInputComponent->BindAction("Interact", IE_Released, this, &AMain::InteractUp);
+
 	//Camera
 		// Keyboard
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AMain::LookUpAtRate);
@@ -281,4 +294,42 @@ void AMain::TurnAtRate(float Rate)
 void AMain::LookUpAtRate(float Rate)
 {
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+}
+
+void AMain::LMBDown()
+{
+	bLmbDown = true;
+}
+
+void AMain::LMBUp()
+{
+}
+
+void AMain::InteractDown()
+{
+	bInteractDown = true;
+	if (ActiveOverlappingItem)
+	{
+		AWeapon* Weapon = Cast<AWeapon>(ActiveOverlappingItem);
+		if (Weapon)
+		{
+			Weapon->Equip(this);
+			Weapon->SetWeaponState(EWeaponState::EWS_Equipped);
+			SetActiveOverlappingItem(nullptr);
+		}
+	}
+}
+
+void AMain::InteractUp()
+{
+}
+
+void AMain::SetEquippedWeapon(AWeapon* WeaponToSet)
+{
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->Destroy();
+	}
+	EquippedWeapon = WeaponToSet;
+
 }

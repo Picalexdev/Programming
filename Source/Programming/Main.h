@@ -134,11 +134,24 @@ public:
 	*/
 	void LookUpAtRate(float Rate);
 
+	bool bLmbDown;
+	void LMBDown();
+	void LMBUp();
+
+	bool bInteractDown;
+	void InteractDown();
+	void InteractUp();
+
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE void SetCameraBoom(USpringArmComponent* SpringArm) { CameraBoom = SpringArm; }
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Items")
-		class AWeapon* EquippedWeapon;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Items")
+	class AWeapon* EquippedWeapon;
 
-	FORCEINLINE void SetEquippedWeapon(AWeapon* WeaponToSet) { EquippedWeapon = WeaponToSet; }
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Items")
+	class AItem* ActiveOverlappingItem;
+
+	void SetEquippedWeapon(AWeapon* WeaponToSet);
+	FORCEINLINE AWeapon* GetEquippedWeapon() { return EquippedWeapon; }
+	FORCEINLINE void SetActiveOverlappingItem(AItem* Item) { ActiveOverlappingItem = Item; }
 };
