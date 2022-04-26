@@ -31,6 +31,8 @@ void APickup::OnOverlapBegin(
 		if (Main)
 		{
 			Main->IncrementCoins(Count);
+			Main->PickupLocations.Add(GetActorLocation());
+			Destroy();
 		}
 	}
 }

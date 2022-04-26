@@ -85,7 +85,6 @@ void AItem::OnOverlapBegin(
 	{
 		UGameplayStatics::PlaySound2D(this, OverlapSound);
 	}
-	Destroy();
 }
 
 // Universal OverlapEnd behaviour

@@ -9,6 +9,8 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Containers/Array.h"
+
 
 
 
@@ -78,6 +80,14 @@ AMain::AMain()
 	MinSprintStamina = 30.f;
 }
 
+void AMain::ShowPickupLocations()
+{
+	for (FVector Location : PickupLocations)
+	{
+		UKismetSystemLibrary::DrawDebugSphere(this, Location, 25.f, 12, FLinearColor::Green, 10.f, 0.5f);
+	}
+}
+
 
 void AMain::DecrementHealth(float DamageTotal)
 {
@@ -101,7 +111,6 @@ void AMain::Die()
 void AMain::BeginPlay()
 {
 	Super::BeginPlay();
-	UKismetSystemLibrary::DrawDebugSphere(this, GetActorLocation() + FVector(0, 0, 175.f), 25.f, 8, FLinearColor::Red, 5.f, 0.5f);
 }
 
 // Called every frame

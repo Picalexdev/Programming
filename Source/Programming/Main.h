@@ -35,7 +35,11 @@ public:
 	// Sets default values for this character's properties
 	AMain();
 
-	TArray<FVector>PickupLocations;
+	TArray<FVector> PickupLocations;
+
+
+	UFUNCTION(BlueprintCallable)
+	void ShowPickupLocations();
 
 	// Set Movement status and running speed
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enums")
@@ -132,4 +136,9 @@ public:
 
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE void SetCameraBoom(USpringArmComponent* SpringArm) { CameraBoom = SpringArm; }
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Items")
+		class AWeapon* EquippedWeapon;
+
+	FORCEINLINE void SetEquippedWeapon(AWeapon* WeaponToSet) { EquippedWeapon = WeaponToSet; }
 };
