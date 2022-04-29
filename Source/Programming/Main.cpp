@@ -11,11 +11,8 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Containers/Array.h"
 #include "Weapon.h"
-
-
-
-
-
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
 
 // Sets default values
 AMain::AMain()
@@ -56,7 +53,7 @@ AMain::AMain()
 
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input
-	GetCharacterMovement()->RotationRate = FRotator(0.f, 300.f, 0.f); // Rotation at which the character turns
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 600.f, 0.f); // Rotation at which the character turns
 	GetCharacterMovement()->JumpZVelocity = 550.f; //Jump height
 	GetCharacterMovement()->AirControl = 0.2f; // Ability to change direction in the air
 	GetCharacterMovement()->MaxAcceleration = 300.f; // Acceleration amount
@@ -89,7 +86,7 @@ void AMain::ShowPickupLocations()
 {
 	for (FVector Location : PickupLocations)
 	{
-		UKismetSystemLibrary::DrawDebugSphere(this, Location, 25.f, 12, FLinearColor::Green, 10.f, 0.5f);
+		UKismetSystemLibrary::DrawDebugSphere(this, Location, 25.f, 12, FLinearColor::Green, 10.f, 1.f);
 	}
 }
 
@@ -219,8 +216,8 @@ void AMain::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
 	// Attack
-	PlayerInputComponent->BindAction("LMBDown", IE_Pressed, this, &AMain::LMBDown);
-	PlayerInputComponent->BindAction("LMBDown", IE_Released, this, &AMain::LMBUp);
+	PlayerInputComponent->BindAction("LMB", IE_Pressed, this, &AMain::LMBDown);
+	PlayerInputComponent->BindAction("LMB", IE_Released, this, &AMain::LMBUp);
 
 	// Item interaction
 	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AMain::InteractDown);
@@ -239,7 +236,7 @@ void AMain::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 // MOVEMENT_________________________________________________________________________________
 void AMain::MoveForward(float Value)
 {
-	if ((Controller != nullptr) && (Value != 0.0f))
+	if (Controller != nullptr && Value != 0.0f && !bAttacking)
 	{
 		// Get the direction the camera is looking
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -253,13 +250,16 @@ void AMain::MoveForward(float Value)
 
 void AMain::MoveRight(float Value)
 {
-	// Get the direction the camera is looking
-	const FRotator Rotation = Controller->GetControlRotation();
-	const FRotator YawRotation(0.f, Rotation.Yaw, 0.f);
+	if (Controller != nullptr && Value != 0.0f && !bAttacking)
+	{
+		// Get the direction the camera is looking
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0.f, Rotation.Yaw, 0.f);
 
-	// RotationMatrix gets world orientation X = Forward Y = Right Z = Up
-	const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-	AddMovementInput(Direction, Value);
+		// RotationMatrix gets world orientation X = Forward Y = Right Z = Up
+		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		AddMovementInput(Direction, Value);
+	}
 }
 
 // Sprinting status
@@ -298,11 +298,15 @@ void AMain::LookUpAtRate(float Rate)
 
 void AMain::LMBDown()
 {
+
 	bLmbDown = true;
+	if (EquippedWeapon && !bAttacking)
+		Attack();
 }
 
 void AMain::LMBUp()
 {
+	bLmbDown = false;
 }
 
 void AMain::InteractDown()
@@ -316,6 +320,8 @@ void AMain::InteractDown()
 			Weapon->Equip(this);
 			Weapon->SetWeaponState(EWeaponState::EWS_Equipped);
 			SetActiveOverlappingItem(nullptr);
+			GetCharacterMovement()->RotationRate = FRotator(0.f, 1200.f, 0.f);
+
 		}
 	}
 }
@@ -332,4 +338,36 @@ void AMain::SetEquippedWeapon(AWeapon* WeaponToSet)
 	}
 	EquippedWeapon = WeaponToSet;
 
+}
+
+void AMain::Attack()
+{
+
+	bAttacking = true;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance)
+	{
+		int32 Section = FMath::RandRange(0, 1);
+		AnimInstance->Montage_Play(CombatMontage, 2.f);
+		switch (Section)
+		{
+		case 0:
+			AnimInstance->Montage_JumpToSection(FName("Attack_1"), CombatMontage);
+			break;
+		case 1:
+			AnimInstance->Montage_JumpToSection(FName("Attack_2"), CombatMontage);
+			break;
+		default:
+			break;
+		}
+
+
+
+	}
+}
+
+void AMain::AttackEnd()
+{
+	bAttacking = false;
 }

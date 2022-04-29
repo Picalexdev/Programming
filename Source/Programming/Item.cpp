@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 #include "Sound/SoundCue.h"
+#include "Main.h"
 
 // Sets default values
 AItem::AItem()
@@ -77,13 +78,20 @@ void AItem::OnOverlapBegin(
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Overlap Begin"));
 
 	// Spawn particle emitter
-	if (OverlapParticles)
+	if (OtherActor)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OverlapParticles, GetActorLocation(), FRotator(0.f), true);
-	}
-	if (OverlapSound)
-	{
-		UGameplayStatics::PlaySound2D(this, OverlapSound);
+		AMain* Main = Cast<AMain>(OtherActor);
+		if (Main)
+		{
+			if (OverlapParticles)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OverlapParticles, GetActorLocation(), FRotator(0.f), true);
+			}
+			if (OverlapSound)
+			{
+				UGameplayStatics::PlaySound2D(this, OverlapSound);
+			}
+		}
 	}
 }
 
@@ -95,7 +103,10 @@ void AItem::OnOverlapEnd(
 	int32 OtherBodyIndex
 )
 {
-	UE_LOG(LogTemp, Warning, TEXT("Overlap End"));
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Overlap End"));
+	if (OtherActor)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Overlap End"));
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Overlap End"));
+	}
 }
 
