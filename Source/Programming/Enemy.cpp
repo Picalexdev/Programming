@@ -23,6 +23,7 @@ AEnemy::AEnemy()
 	CombatSphere->SetupAttachment(GetRootComponent());
 	CombatSphere->InitSphereRadius(75.f);
 
+	bOverlappingCombatSphere = false;
 }
 
 // Called when the game starts or when spawned
@@ -79,7 +80,18 @@ void AEnemy::AgroSphereOnOverlapEnd(
 	int32 OtherBodyIndex
 ) 
 {
-
+	if (OtherActor)
+	{
+		AMain* Main = Cast<AMain>(OtherActor);
+		if (Main)
+		{
+			SetEnemyMovementStatus(EEnemyMovementStatus::EMS_Idle);
+			if (AIController)
+			{
+				AIController->StopMovement();
+			}
+		}
+	}
 }
 
 void AEnemy::CombatSphereOnOverlapBegin(
@@ -91,6 +103,16 @@ void AEnemy::CombatSphereOnOverlapBegin(
 	const FHitResult& SweepResult
 )
 {
+	if (OtherActor)
+	{
+		AMain* Main = Cast<AMain>(OtherActor);
+		if (Main)
+		{
+			CombatTarget = Main;
+			bOverlappingCombatSphere = true;
+			SetEnemyMovementStatus(EEnemyMovementStatus::EMS_Attacking);
+		}
+	}
 
 }
 
@@ -101,7 +123,19 @@ void AEnemy::CombatSphereOnOverlapEnd(
 	int32 OtherBodyIndex
 )
 {
-
+	if (OtherActor)
+	{
+		AMain* Main = Cast<AMain>(OtherActor);
+		if (Main)
+		{
+			bOverlappingCombatSphere = false;
+			if (EnemyMovementStatus != EEnemyMovementStatus::EMS_Attacking)
+			{
+				CombatTarget = nullptr;
+				MoveToTarget(Main);
+			}
+		}
+	}
 }
 
 void AEnemy::MoveToTarget(AMain* Target)
@@ -112,7 +146,7 @@ void AEnemy::MoveToTarget(AMain* Target)
 	{
 		FAIMoveRequest MoveRequest;
 		MoveRequest.SetGoalActor(Target);
-		MoveRequest.SetAcceptanceRadius(5.f);
+		MoveRequest.SetAcceptanceRadius(10.f);
 
 		FNavPathSharedPtr NavPath;
 

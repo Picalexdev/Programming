@@ -86,5 +86,13 @@ public:
 			int32 OtherBodyIndex
 		);
 
+	UFUNCTION(BlueprintCallable)
 	void MoveToTarget(class AMain* Target);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI")
+	bool bOverlappingCombatSphere;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI")
+	AMain* CombatTarget;
+
 };
