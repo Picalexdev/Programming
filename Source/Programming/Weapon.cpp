@@ -9,6 +9,8 @@
 #include "Sound/SoundCue.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/EngineTypes.h"
+#include "Components/BoxComponent.h"
+#include "Enemy.h"
 
 
 AWeapon::AWeapon()
@@ -16,9 +18,22 @@ AWeapon::AWeapon()
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
 	WeaponMesh->SetupAttachment(AItem::Mesh);
 
+	CombatCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("CombatCollision"));
+	CombatCollision->SetupAttachment(WeaponMesh);
+
 	bKeepParticlesOnPickup = false;
 
 	WeaponState = EWeaponState::EWS_Pickup;
+
+	Damage = 25.f;
+}
+
+void AWeapon::BeginPlay()
+{
+	Super::BeginPlay();
+
+	CombatCollision->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnCombatOverlapBegin);
+	CombatCollision->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnCombatOverlapEnd);
 }
 
 void AWeapon::OnOverlapBegin(
@@ -82,4 +97,41 @@ void AWeapon::Equip(AMain* Char)
 				UGameplayStatics::PlaySound2D(this, OnEquipSound);
 		}
 	}
+}
+
+void AWeapon::OnCombatOverlapBegin(
+	UPrimitiveComponent* OverlappedComponent, 
+	AActor* OtherActor, 
+	UPrimitiveComponent* OtherComp, 
+	int32 OtherBodyIndex, 
+	bool bFromSweep, 
+	const FHitResult& SweepResult
+)
+{
+	if (OtherActor)
+	{
+		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
+		if (Enemy)
+		{
+			if (Enemy->HitParticles)
+			{
+				const USkeletalMeshSocket* HitParticleSocket = WeaponMesh->GetSocketByName("HitParticleSocket");
+				if (HitParticleSocket)
+				{
+					FVector SocketLocation = HitParticleSocket->GetSocketLocation(WeaponMesh);
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Enemy->HitParticles, GetActorLocation(), FRotator(0.f));
+				}
+			}
+		}
+	}
+}
+
+void AWeapon::OnCombatOverlapEnd(
+	UPrimitiveComponent* OverlappedComponent, 
+	AActor* OtherActor, 
+	UPrimitiveComponent* 
+	OtherComp, 
+	int32 OtherBodyIndex
+)
+{
 }
