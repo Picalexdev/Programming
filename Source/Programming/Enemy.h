@@ -12,6 +12,7 @@ enum class EEnemyMovementStatus : uint8
 	EMS_Idle			UMETA(Displayname = "Idle"),
 	EMS_MoveToTarget	UMETA(Displayname = "MoveToTarget"),
 	EMS_Attacking		UMETA(Displayname = "Attacking"),
+	EMS_Dead			UMETA(Displayname = "Dead"),
 
 	EMS_MAX				UMETA(Displayname = "DefaultMax")
 };
@@ -50,6 +51,27 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	class UParticleSystem* HitParticles;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
+	class USoundCue* HitSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
+	USoundCue* SwingSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI | Combat")
+	class UAnimMontage* CombatMontage;
+
+	FTimerHandle AttackTimer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI | Combat")
+	float AttackMinTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI | Combat")
+	float AttackMaxTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI | Combat")
+	TSubclassOf<UDamageType> DamageTypeClass;
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -107,4 +129,51 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI")
 	AMain* CombatTarget;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI | Combat")
+	class UBoxComponent* CombatCollision;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI | Combat")
+	float AttackDamage;
+
+	UFUNCTION()
+		void OnCombatOverlapBegin(
+			UPrimitiveComponent* OverlappedComponent,
+			AActor* OtherActor,
+			UPrimitiveComponent* OtherComp,
+			int32 OtherBodyIndex,
+			bool bFromSweep,
+			const FHitResult& SweepResult
+		);
+
+	UFUNCTION()
+		void OnCombatOverlapEnd(
+			UPrimitiveComponent* OverlappedComponent,
+			AActor* OtherActor,
+			UPrimitiveComponent* OtherComp,
+			int32 OtherBodyIndex
+		);
+
+	UFUNCTION(BlueprintCallable)
+		void ActivateCollision();
+
+	UFUNCTION(BlueprintCallable)
+		void DeactivateCollision();
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI | Combat")
+	bool bAttacking;
+
+	UFUNCTION(BlueprintCallable)
+	void Attack();
+
+	UFUNCTION(BlueprintCallable)
+	void AttackEnd();
+
+	virtual float TakeDamage(
+		float DamageAmount,
+		struct FDamageEvent const& DamageEvent,
+		class AController* EventInstigator,
+		AActor* DamageCauser
+	) override;
+
+	void Die();
 };

@@ -3,6 +3,7 @@
 
 #include "Explosive.h"
 #include "Main.h"
+#include "Kismet/GameplayStatics.h"
 
 AExplosive::AExplosive()
 {

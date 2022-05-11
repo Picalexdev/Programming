@@ -37,6 +37,4 @@ public:
 		int32 OtherBodyIndex
 	) override;
 
-
-
 };

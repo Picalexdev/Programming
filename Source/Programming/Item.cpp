@@ -75,7 +75,7 @@ void AItem::OnOverlapBegin(
 )
 {
 	UE_LOG(LogTemp, Warning, TEXT("Overlap Begin"));
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Overlap Begin"));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Overlap Begin"));
 
 	// Spawn particle emitter
 	if (OtherActor)
@@ -106,7 +106,7 @@ void AItem::OnOverlapEnd(
 	if (OtherActor)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Overlap End"));
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Overlap End"));
+		//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Overlap End"));
 	}
 }
 

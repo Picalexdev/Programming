@@ -74,10 +74,3 @@ void AFloatingPlatform::SwapVectors(FVector& VecOne, FVector& VecTwo)
 	VecOne = VecTwo;
 	VecTwo = Temp;
 }
-
-
-
-
-
-
-

@@ -9,10 +9,14 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "Containers/Array.h"
 #include "Weapon.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
+#include "Sound/SoundCue.h"
+#include "Enemy.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AMain::AMain()
@@ -80,6 +84,9 @@ AMain::AMain()
 
 	bLmbDown = false;
 	bInteractDown = false;
+
+	InterpSpeed = 15.f;
+	bInterpToEnemy = false;
 }
 
 void AMain::ShowPickupLocations()
@@ -91,13 +98,32 @@ void AMain::ShowPickupLocations()
 }
 
 
-void AMain::DecrementHealth(float DamageTotal)
+float AMain::DecrementHealth(float DamageAmount)
 {
-	if (Health - DamageTotal <= 0)
+	if (Health - DamageAmount <= 0.F)
 	{
+		float Ret = Health;
+		Health = 0.f;
 		Die();
+		return Ret;
 	}
-	Health -= DamageTotal;
+	else
+	{
+		Health -= DamageAmount;
+		return DamageAmount;
+	}
+}
+
+float AMain::TakeDamage(
+	float DamageAmount, 
+	FDamageEvent const& DamageEvent, 
+	AController* EventInstigator,
+	AActor* DamageCauser
+)
+{
+	float Ret = DecrementHealth(DamageAmount);
+
+	return Ret;
 }
 
 void AMain::IncrementCoins(int32 Amount)
@@ -107,6 +133,15 @@ void AMain::IncrementCoins(int32 Amount)
 
 void AMain::Die()
 {
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && CombatMontage)
+	{
+		AnimInstance->Montage_Play(CombatMontage, 1.0f);
+		AnimInstance->Montage_JumpToSection(FName("Death"));
+	}
+	MovementStatus = EMovementStatus::EMS_Dead;
+
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 // Called when the game starts or when spawned
@@ -197,6 +232,21 @@ void AMain::Tick(float DeltaTime)
 		;
 	}
 
+	if (bInterpToEnemy && CombatTarget)
+	{
+		FRotator LookAtYaw = GetLookAtRotationYaw(CombatTarget->GetActorLocation());
+		FRotator InterpRotator = FMath::RInterpTo(GetActorRotation(), LookAtYaw, DeltaTime, InterpSpeed);
+
+		SetActorRotation(InterpRotator);
+	}
+
+}
+
+FRotator AMain::GetLookAtRotationYaw(FVector Target)
+{
+	FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Target);
+	FRotator LookAtRotationYaw(0.f, LookAtRotation.Yaw, 0.f);
+	return LookAtRotationYaw;
 }
 
 // Called to bind functionality to input
@@ -261,6 +311,8 @@ void AMain::MoveRight(float Value)
 		AddMovementInput(Direction, Value);
 	}
 }
+
+
 
 // Sprinting status
 void AMain::SetMovementStatus(EMovementStatus Status)
@@ -344,9 +396,9 @@ void AMain::Attack()
 {
 
 	bAttacking = true;
-
+	SetInterpToEnemy(true);
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (AnimInstance)
+	if (AnimInstance && CombatMontage)
 	{
 		int32 Section = FMath::RandRange(0, 1);
 		AnimInstance->Montage_Play(CombatMontage, 2.f);
@@ -361,13 +413,20 @@ void AMain::Attack()
 		default:
 			break;
 		}
-
-
-
 	}
 }
 
 void AMain::AttackEnd()
 {
+	bInterpToEnemy = false;
 	bAttacking = false;
+}
+
+void AMain::PlaySwingSound()
+{
+	if (EquippedWeapon)
+	{
+		if (EquippedWeapon->SwingSound)
+			UGameplayStatics::PlaySound2D(this, EquippedWeapon->SwingSound);
+	}
 }
